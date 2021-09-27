@@ -1,0 +1,21 @@
+{
+    "name": "rkaiser0324/schema-manage",
+    "description": "SchemaManage plugin for CakePHP, as an alternative to the Migrations plugin",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.2",
+        "dbdiff/dbdiff": "dev-master"
+    },
+    "repositories": [
+        {
+            "url": "https://github.com/rkaiser0324/DBDiff",
+            "type": "git"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "SchemaManage\\": "src/"
+        }
+    }
+}
