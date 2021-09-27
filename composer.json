@@ -4,15 +4,8 @@
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
-        "php": ">=7.2",
-        "dbdiff/dbdiff": "1.0"
+        "php": ">=7.2"
     },
-    "repositories": [
-        {
-            "url": "https://github.com/rkaiser0324/DBDiff",
-            "type": "git"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "SchemaManage\\": "src/"

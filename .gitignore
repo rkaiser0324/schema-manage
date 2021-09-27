@@ -4,5 +4,4 @@
 /.phpunit.result.cache
 /phpunit.phar
 /config/Migrations/schema-dump-default.lock
-/vendor/
 /.idea/
