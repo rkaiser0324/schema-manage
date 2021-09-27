@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2",
-        "dbdiff/dbdiff": "dev-master"
+        "dbdiff/dbdiff": "1.0"
     },
     "repositories": [
         {
