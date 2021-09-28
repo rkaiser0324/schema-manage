@@ -14,9 +14,15 @@ class AddTableSQL implements SQLGenInterface {
         $connection = $this->obj->connection;
         $res = $connection->select("SHOW CREATE TABLE `$table`");
         $sql = $res[0]['Create Table'];
+
+        // Drop auto-increments if they're present
+        $sql = preg_replace('/ AUTO_INCREMENT=(.+?) /', ' ', $sql);
+
+        $sql .= ";";
+
         if (strstr($sql, ' REFERENCES ') != null)
         {
-            $sql = "SET FOREIGN_KEY_CHECKS=0;\n" . $sql . ";\nSET FOREIGN_KEY_CHECKS=1;";
+            $sql = "SET FOREIGN_KEY_CHECKS=0;\n" . $sql . "\nSET FOREIGN_KEY_CHECKS=1;";
         }
         return $sql;
     }
