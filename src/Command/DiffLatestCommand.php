@@ -12,7 +12,7 @@ use Cake\Datasource\ConnectionManager;
  *
  *      ROOT/config/SchemaDiffs/<connection_name>/*.sql
  *
- * diff_latest - get a diff from the schema constructed by all the diff files (i.e., the "working tree")
+ * diff_latest - get a diff from the schema constructed by all the diff files (i.e., the "working tree").  If `connection_name` is not specified it defaults to "default".
  *
  *      bin/cake schema_manage.diff_latest <diff_name> <connection_name> [--dry-run]
  *
@@ -27,8 +27,7 @@ class DiffLatestCommand extends DiffCommand
                 'required' => true
             ],
             'connection' => [
-                'help' => 'Name of the connection',
-                'required' => true
+                'help' => 'Name of the connection, defaults to "default"'
             ]
         ]);
 
@@ -45,7 +44,7 @@ class DiffLatestCommand extends DiffCommand
 
     public function _diff_latest($connection_name, ConsoleIo $io)
     {
-        $connection = ConnectionManager::get($connection_name);
+        $connection = ConnectionManager::get(empty($connection_name) ? 'default' : $connection_name);
         $config = $connection->config();
 
         ConnectionManager::setConfig('no_db', [
@@ -97,8 +96,9 @@ class DiffLatestCommand extends DiffCommand
         $params = new \DBDiff\Params\DefaultParams;
 
         $diff_name = $args->getArguments()[0];
-        $conn_before = $this->_diff_latest($args->getArguments()[1], $io);
-        $conn_after = ConnectionManager::get($args->getArguments()[1]);
+        $connection_name = empty($args->getArguments()[1]) ? 'default' : $args->getArguments()[1];
+        $conn_before = $this->_diff_latest($connection_name, $io);
+        $conn_after = ConnectionManager::get($connection_name);
 
         try {
             $this->_diff($io, $params, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));

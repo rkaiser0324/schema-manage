@@ -12,9 +12,9 @@ use Cake\Datasource\ConnectionManager;
  *
  *      ROOT/config/SchemaDiffs/<connection_name>/*.sql
  *
- * snapshot - snapshot a schema
+ * snapshot - snapshot a schema.  If `connection_name` is not specified it defaults to "default".
  *
- *      bin/cake schema_manage.snapshot <snapshot_name> <connection_name> [--dry-run]
+ *      bin/cake schema_manage.snapshot <snapshot_name> [connection_name] [--dry-run]
  *
  */
 class SnapshotCommand extends DiffCommand
@@ -27,8 +27,7 @@ class SnapshotCommand extends DiffCommand
                 'required' => true
             ],
             'connection' => [
-                'help' => 'Name of the connection',
-                'required' => true
+                'help' => 'Name of the connection, defaults to "default"'
             ]
         ]);
 
@@ -48,7 +47,8 @@ class SnapshotCommand extends DiffCommand
         $params = new \DBDiff\Params\DefaultParams;
 
         $diff_name = $args->getArguments()[0];
-        $conn_before = ConnectionManager::get($args->getArguments()[1]);
+        $connection_name = empty($args->getArguments()[1]) ? 'default' : $args->getArguments()[1];
+        $conn_before = ConnectionManager::get($connection_name);
         $conn_after = $conn_before;
         $params->snapshot = true;
 
