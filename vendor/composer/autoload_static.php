@@ -6,121 +6,6 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit2af5d9895ce3f126a11a443b2282101f
 {
-    public static $files = array (
-        '3b5531f8bb4716e1b6014ad7e734f545' => __DIR__ . '/..' . '/illuminate/support/Illuminate/Support/helpers.php',
-        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
-        '3ef87127dc6892a0a78f223558a0b940' => __DIR__ . '/..' . '/diff/diff/Diff.php',
-    );
-
-    public static $prefixLengthsPsr4 = array (
-        'S' => 
-        array (
-            'Symfony\\Polyfill\\Mbstring\\' => 26,
-            'Symfony\\Polyfill\\Ctype\\' => 23,
-            'Symfony\\Component\\Yaml\\' => 23,
-            'Symfony\\Component\\Translation\\' => 30,
-            'SchemaManage\\' => 13,
-        ),
-        'D' => 
-        array (
-            'Diff\\' => 5,
-            'DBDiff\\' => 7,
-        ),
-        'A' => 
-        array (
-            'Aura\\Cli\\_Config\\' => 17,
-            'Aura\\Cli\\' => 9,
-        ),
-    );
-
-    public static $prefixDirsPsr4 = array (
-        'Symfony\\Polyfill\\Mbstring\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
-        ),
-        'Symfony\\Polyfill\\Ctype\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
-        ),
-        'Symfony\\Component\\Yaml\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/yaml',
-        ),
-        'Symfony\\Component\\Translation\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/translation',
-        ),
-        'SchemaManage\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
-        ),
-        'Diff\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/diff/diff/src',
-        ),
-        'DBDiff\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/dbdiff/dbdiff/src',
-        ),
-        'Aura\\Cli\\_Config\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/aura/cli/config',
-        ),
-        'Aura\\Cli\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/aura/cli/src',
-        ),
-    );
-
-    public static $fallbackDirsPsr4 = array (
-        0 => __DIR__ . '/..' . '/nesbot/carbon/src',
-    );
-
-    public static $prefixesPsr0 = array (
-        'U' => 
-        array (
-            'UpdateHelper\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/kylekatarnls/update-helper/src',
-            ),
-        ),
-        'S' => 
-        array (
-            'Symfony\\Component\\Finder\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/finder',
-            ),
-        ),
-        'I' => 
-        array (
-            'Illuminate\\View' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/view',
-            ),
-            'Illuminate\\Support' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/support',
-            ),
-            'Illuminate\\Filesystem' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/filesystem',
-            ),
-            'Illuminate\\Events' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/events',
-            ),
-            'Illuminate\\Database' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/database',
-            ),
-            'Illuminate\\Container' => 
-            array (
-                0 => __DIR__ . '/..' . '/illuminate/container',
-            ),
-        ),
-    );
-
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -128,10 +13,6 @@ class ComposerStaticInit2af5d9895ce3f126a11a443b2282101f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit2af5d9895ce3f126a11a443b2282101f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit2af5d9895ce3f126a11a443b2282101f::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr4 = ComposerStaticInit2af5d9895ce3f126a11a443b2282101f::$fallbackDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit2af5d9895ce3f126a11a443b2282101f::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit2af5d9895ce3f126a11a443b2282101f::$classMap;
 
         }, null, ClassLoader::class);

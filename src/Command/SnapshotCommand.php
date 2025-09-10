@@ -44,16 +44,16 @@ class SnapshotCommand extends DiffCommand
 
     public function execute(Arguments $args, ConsoleIo $io)
     {
-        $params = new \DBDiff\Params\DefaultParams;
+        //$params = new \DBDiff\Params\DefaultParams;
 
         $diff_name = $args->getArguments()[0];
         $connection_name = empty($args->getArguments()[1]) ? 'default' : $args->getArguments()[1];
         $conn_before = ConnectionManager::get($connection_name);
         $conn_after = $conn_before;
-        $params->snapshot = true;
+        //$params->snapshot = true;
 
         try {
-            $this->_diff($io, $params, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
+            $this->_diff($io, null, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
 
             $this->_cleanup($io);
         } catch (\exception $ex) {

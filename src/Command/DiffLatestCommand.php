@@ -72,11 +72,11 @@ class DiffLatestCommand extends DiffCommand
         foreach (glob($dir . '*.sql') as $filename) {
             $io->out("Applying diff from " .$filename);
             $contents = file_get_contents($filename);
-            if ($matches = preg_split('@#(.+?)[\r\n]@', $contents, null, PREG_SPLIT_NO_EMPTY)) {
+            if ($matches = preg_split('@#(.+?)[\r\n]@', $contents, -1, PREG_SPLIT_NO_EMPTY)) {
                 $up_sql = $matches[0];
 
                 // Execute each statement individually for better error handling
-                foreach (preg_split('@;[\r\n]@', $up_sql, null, PREG_SPLIT_NO_EMPTY) as $s) {
+                foreach (preg_split('@;[\r\n]@', $up_sql, -1, PREG_SPLIT_NO_EMPTY) as $s) {
                     $buffer = $connection_tempdb->prepare($s);
                     try {
                         $statement = $buffer->execute();
@@ -93,15 +93,13 @@ class DiffLatestCommand extends DiffCommand
 
     public function execute(Arguments $args, ConsoleIo $io)
     {
-        $params = new \DBDiff\Params\DefaultParams;
-
         $diff_name = $args->getArguments()[0];
         $connection_name = empty($args->getArguments()[1]) ? 'default' : $args->getArguments()[1];
         $conn_before = $this->_diff_latest($connection_name, $io);
         $conn_after = ConnectionManager::get($connection_name);
 
         try {
-            $this->_diff($io, $params, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
+            $this->_diff($io, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
 
             $this->_cleanup($io);
         } catch (\exception $ex) {

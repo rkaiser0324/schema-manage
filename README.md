@@ -1,6 +1,10 @@
 # SchemaManage plugin for CakePHP 4
 
-This plugin uses [a fork of DBDiff](https://github.com/rkaiser0324/DBDiff) to generate schema diffs in SQL, as an alternative to the [CakePHP Migrations plugin](https://book.cakephp.org/migrations/3/en/index.html) as this workflow seems more intuitive for source control.  Plus, the file format used is plain SQL so diffs are very easy to read.
+This plugin uses `schemadiff` to generate schema diffs in SQL, as an alternative to the [CakePHP Migrations plugin](https://book.cakephp.org/migrations/3/en/index.html) as this workflow seems more intuitive for source control.  Plus, the file format used is plain SQL so diffs are very easy to read.
+
+The usage mimics the format of [DBDiff](https://github.com/rkaiser0324/DBDiff) which was used previously.
+
+Note that `schemadiff` does not recognize column order changes after a table has been created, [by design](https://github.com/planetscale/schemadiff/issues/29).
 
 ## Installation
 

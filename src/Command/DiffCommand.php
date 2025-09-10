@@ -1,4 +1,5 @@
 <?php
+
 namespace SchemaManage\Command;
 
 use Cake\Command\Command;
@@ -7,9 +8,10 @@ use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\ConnectionManager;
 use Cake\Core\Configure;
+use stdClass;
 
 /**
- * Use DBDiff to generate schema diffs in SQL, as an alternative to the Migrations plugin.  Unless the `--dry-run` option is added, files are output to:
+ * Generate schema diffs in SQL, as an alternative to the Migrations plugin.  Unless the `--dry-run` option is added, files are output to:
  *
  *      ROOT/config/SchemaDiffs/<connection_after>/*.sql
  *
@@ -24,14 +26,14 @@ class DiffCommand extends \Cake\Command\Command
 
     protected $_tempdb_name;
 
-    public function initialize() : void
+    public function initialize(): void
     {
         parent::initialize();
 
         require dirname(__FILE__) .'/../../vendor/autoload.php';
     }
 
-    protected function buildOptionParser(ConsoleOptionParser $parser) : ConsoleOptionParser
+    protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
         $parser->addArguments([
             'name' => [
@@ -60,14 +62,12 @@ class DiffCommand extends \Cake\Command\Command
 
     public function execute(Arguments $args, ConsoleIo $io)
     {
-        $params = new \DBDiff\Params\DefaultParams;
-
         $diff_name = $args->getArguments()[0];
         $conn_before = ConnectionManager::get($args->getArguments()[1]);
         $conn_after = ConnectionManager::get($args->getArguments()[2]);
 
         try {
-            $this->_diff($io, $params, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
+            $this->_diff($io, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
 
             $this->_cleanup($io);
         } catch (\exception $ex) {
@@ -85,43 +85,66 @@ class DiffCommand extends \Cake\Command\Command
         $io->success('Done.');
     }
 
-    protected function _diff($io, $params, $config_before, $config_after, $diff_name, $dry_run = false)
+    protected function _diff($io, $config_before, $config_after, $diff_name, $dry_run = false)
     {
-        $dbdiff = new \DBDiff\DBDiff;
+        if (empty($config_before)) {
+            throw new \exception("No configuration for 'before' connection; snapshot not implemented yet");
+        }
 
-        // Notice the "backward" syntax here, compared to DBDiff
-        $params->server2 = [
-        'user'     => $config_before['username'],
-        'password' => $config_before['password'],
-        'host'     => $config_before['host'],
-        'port'     => 3306
-    ];
-
-        $params->server1 = [
-        'user'     => $config_after['username'],
-        'password' => $config_after['password'],
-        'host'     => $config_after['host'],
-        'port'     => 3306
-    ];
-
-        $output_path = sprintf(ROOT . '/config/SchemaDiffs/%s/%s_%s.sql', $config_after['name'], strftime('%Y%m%d%H%M'), $diff_name);
+        $output_path = sprintf(ROOT . '/config/SchemaDiffs/%s/%s_%s.sql', $config_after['name'], strftime('%Y%m%d%H%M%S'), $diff_name);
         if (!is_dir(dirname($output_path))) {
             if (!mkdir(dirname($output_path), 0600, true)) {
                 throw new \exception(sprintf("Cannot create directory %s", dirname($output_path)));
             }
         }
-        $params->output = $output_path;
-        $params->template='templates/simple-db-migrate.tmpl';
-        $params->nocomments = true;
 
-        $params->include='all';
-        $params->input = [
-    'kind' => 'db',
-    'source' => ['server' => 'server1', 'db' =>  $config_after['database']],
-    'target' => ['server' => 'server2', 'db' => $config_before['database']],
-];
+        $cmd = sprintf(
+            "schemadiff diff --source '%s:%s@tcp(%s:%s)/%s' --target '%s:%s@tcp(%s:%s)/%s'",
+            $config_before['username'],
+            $config_before['password'],
+            $config_before['host'],
+            $config_before['port'] ?? 3306,
+            $config_before['database'],
+            $config_after['username'],
+            $config_after['password'],
+            $config_after['host'],
+            $config_after['port'] ?? 3306,
+            $config_after['database']
+        );
 
-        $dbdiff->run($params);
+        //$io->info($cmd);
+
+        $output = [];
+        exec($cmd, $output);
+        if (empty($output)) {
+            $io->out("<comment>No output from schemadiff command - schemas are identical</comment>");
+            return;
+        }
+
+        $result = "#---------- UP ----------\n" . implode("\n", $output);
+
+        $cmd = sprintf(
+            "schemadiff diff --target '%s:%s@tcp(%s:%s)/%s' --source '%s:%s@tcp(%s:%s)/%s'",
+            $config_before['username'],
+            $config_before['password'],
+            $config_before['host'],
+            $config_before['port'] ?? 3306,
+            $config_before['database'],
+            $config_after['username'],
+            $config_after['password'],
+            $config_after['host'],
+            $config_after['port'] ?? 3306,
+            $config_after['database'],
+            $output_path
+        );
+
+        $output = [];
+        exec($cmd, $output);
+        $result .= "\n#---------- DOWN ----------\n" . implode("\n", $output);
+
+        if (!file_put_contents($output_path, $result)) {
+            throw new \exception("Cannot write output file " . $output_path);
+        }
 
         if ($dry_run && file_exists($output_path)) {
             $io->out(file_get_contents($output_path));
