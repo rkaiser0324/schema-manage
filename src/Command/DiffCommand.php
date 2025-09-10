@@ -1,4 +1,5 @@
 <?php
+
 namespace SchemaManage\Command;
 
 use Cake\Command\Command;
@@ -7,9 +8,10 @@ use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Datasource\ConnectionManager;
 use Cake\Core\Configure;
+use stdClass;
 
 /**
- * Use DBDiff to generate schema diffs in SQL, as an alternative to the Migrations plugin.  Unless the `--dry-run` option is added, files are output to:
+ * Generate schema diffs in SQL, as an alternative to the Migrations plugin.  Unless the `--dry-run` option is added, files are output to:
  *
  *      ROOT/config/SchemaDiffs/<connection_after>/*.sql
  *
@@ -24,14 +26,14 @@ class DiffCommand extends \Cake\Command\Command
 
     protected $_tempdb_name;
 
-    public function initialize() : void
+    public function initialize(): void
     {
         parent::initialize();
 
         require dirname(__FILE__) .'/../../vendor/autoload.php';
     }
 
-    protected function buildOptionParser(ConsoleOptionParser $parser) : ConsoleOptionParser
+    protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
         $parser->addArguments([
             'name' => [
@@ -60,14 +62,12 @@ class DiffCommand extends \Cake\Command\Command
 
     public function execute(Arguments $args, ConsoleIo $io)
     {
-        $params = new \DBDiff\Params\DefaultParams;
-
         $diff_name = $args->getArguments()[0];
         $conn_before = ConnectionManager::get($args->getArguments()[1]);
         $conn_after = ConnectionManager::get($args->getArguments()[2]);
 
         try {
-            $this->_diff($io, $params, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
+            $this->_diff($io, $conn_before->config(), $conn_after->config(), $diff_name, $args->getOption('dry-run'));
 
             $this->_cleanup($io);
         } catch (\exception $ex) {
@@ -85,9 +85,9 @@ class DiffCommand extends \Cake\Command\Command
         $io->success('Done.');
     }
 
-    protected function _diff($io, $params, $config_before, $config_after, $diff_name, $dry_run = false)
+    protected function _diff($io, $config_before, $config_after, $diff_name, $dry_run = false)
     {
-        $dbdiff = new \DBDiff\DBDiff;
+        $params = new stdClass();
 
         // Notice the "backward" syntax here, compared to DBDiff
         $params->server2 = [
@@ -121,13 +121,111 @@ class DiffCommand extends \Cake\Command\Command
     'target' => ['server' => 'server2', 'db' => $config_before['database']],
 ];
 
-        $dbdiff->run($params);
+        exec("python3 -m venv venv \
+    && ( \
+        source /tmp/mysql8-utilities-python3/venv/bin/activate \
+        && mysqldbcompare \
+            --server1='root:dev@mysql' \
+            --server2='root:dev@mysql' \
+            --run-all-tests \
+            --skip-row-count \
+            --skip-data-check \
+            --difftype=sql \
+            --changes-for=server2 \
+            digipowers_ravn_dev:digipowers_ravn > diff.sql \
+        )");
 
+        $this->_processSql('diff.sql', $output_path);
         if ($dry_run && file_exists($output_path)) {
             $io->out(file_get_contents($output_path));
             if (!unlink($output_path)) {
                 throw new \exception("Cannot delete output file " . $output_path);
             }
         }
+    }
+
+    private function _processSql($inputFile, $outputFile)
+    {
+        // Read all lines from the input file
+        $lines = file($inputFile, FILE_IGNORE_NEW_LINES);
+        $result = [];
+        $i = 0;
+
+        while ($i < count($lines)) {
+            $currentLine = trim($lines[$i]);
+
+            // Check if current line matches ALTER TABLE pattern
+            if (preg_match('/^ALTER TABLE `[^`]+`\.`[^`]+`$/', $currentLine)) {
+                // Look backwards to check for the pattern: newline, comment lines, newline
+                $alterTableIndex = $i;
+                $patternFound = false;
+
+                // Check if next line exists and matches AUTO_INCREMENT pattern
+                if (($i + 1) < count($lines)) {
+                    $nextLine = trim($lines[$i + 1]);
+                    if (preg_match('/^AUTO_INCREMENT=\d+;$/', $nextLine)) {
+                        // Now check backwards for the pattern
+                        $j = $i - 1;
+
+                        // Must have a newline (empty line) before ALTER TABLE
+                        if ($j >= 0 && trim($lines[$j]) === '') {
+                            $j--;
+                            $foundComments = false;
+
+                            // Look for comment lines (lines starting with #)
+                            while ($j >= 0 && preg_match('/^#/', trim($lines[$j]))) {
+                                $foundComments = true;
+                                $j--;
+                            }
+
+                            // Must have found at least one comment line and have a newline before comments
+                            if ($foundComments && $j >= 0 && trim($lines[$j]) === '') {
+                                $patternFound = true;
+
+                                // Remove all lines from the pattern start to after AUTO_INCREMENT
+                                // $j points to the line before the first newline
+                                // We want to remove from $j+1 (first newline) to $i+1 (AUTO_INCREMENT line)
+
+                                // Remove the pattern from result if it was already added
+                                $linesToRemove = ($i + 2) - ($j + 1);
+                                for ($k = 0; $k < $linesToRemove; $k++) {
+                                    if (count($result) > 0) {
+                                        array_pop($result);
+                                    }
+                                }
+
+                                // Skip to after AUTO_INCREMENT line
+                                $i = $alterTableIndex + 2;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If we reach here, add the line to result
+            $result[] = $lines[$i];
+            $i++;
+        }
+
+        // Strip all lines that are newlines or start with "#"
+        $resultArr = [];
+        foreach ($result as $line) {
+            $trimmedLine = trim($line);
+            // Skip empty lines or lines starting with #
+            if ($trimmedLine !== '' && !preg_match('/^#/', $trimmedLine)) {
+                $resultArr[] = $line;
+            }
+        }
+
+        $resultStr = implode(PHP_EOL, $resultArr);
+
+        // Strip out ",\nAUTO_INCREMENT=number;" patterns within lines
+        $resultStr = preg_replace('/,\s*\nAUTO_INCREMENT=\d+;/', ';', $resultStr);
+
+        // Write the result to output file
+        file_put_contents($outputFile, $resultStr . PHP_EOL);
+
+        echo "Processed file saved as: $outputFile\n";
     }
 }
