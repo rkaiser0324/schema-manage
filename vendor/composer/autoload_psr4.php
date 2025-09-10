@@ -6,14 +6,4 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
-    'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
-    'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
-    'Symfony\\Component\\Translation\\' => array($vendorDir . '/symfony/translation'),
-    'SchemaManage\\' => array($baseDir . '/src'),
-    'Diff\\' => array($vendorDir . '/diff/diff/src'),
-    'DBDiff\\' => array($vendorDir . '/dbdiff/dbdiff/src'),
-    'Aura\\Cli\\_Config\\' => array($vendorDir . '/aura/cli/config'),
-    'Aura\\Cli\\' => array($vendorDir . '/aura/cli/src'),
-    '' => array($vendorDir . '/nesbot/carbon/src'),
 );
