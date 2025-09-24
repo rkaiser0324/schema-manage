@@ -4,6 +4,8 @@ This plugin uses `schemadiff` to generate schema diffs in SQL, as an alternative
 
 The usage mimics the format of [DBDiff](https://github.com/rkaiser0324/DBDiff) which was used previously.
 
+Note that `schemadiff` does not recognize column order changes after a table has been created, [by design](https://github.com/planetscale/schemadiff/issues/29).
+
 ## Installation
 
 You can install this plugin into your CakePHP application using [composer](https://getcomposer.org).
