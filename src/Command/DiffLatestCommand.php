@@ -75,6 +75,8 @@ class DiffLatestCommand extends DiffCommand
             if ($matches = preg_split('@#(.+?)[\r\n]@', $contents, -1, PREG_SPLIT_NO_EMPTY)) {
                 $up_sql = $matches[0];
 
+                $io->out ($up_sql); 
+
                 // Execute each statement individually for better error handling
                 foreach (preg_split('@;[\r\n]@', $up_sql, -1, PREG_SPLIT_NO_EMPTY) as $s) {
                     $buffer = $connection_tempdb->prepare($s);
