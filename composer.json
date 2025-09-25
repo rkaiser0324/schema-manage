@@ -17,5 +17,10 @@
         "allow-plugins": {
             "kylekatarnls/update-helper": true
         }
+    },
+    "scripts": {
+        "pre-install-cmd": [
+            "which schemadiff || (echo 'Error: schemadiff is not installed. Please install schemadiff per the README.' && exit 1)"
+        ]
     }
 }

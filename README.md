@@ -1,20 +1,22 @@
 # SchemaManage plugin for CakePHP 4
 
-This plugin uses `schemadiff` to generate schema diffs in SQL, as an alternative to the [CakePHP Migrations plugin](https://book.cakephp.org/migrations/3/en/index.html) as this workflow seems more intuitive for source control.  Plus, the file format used is plain SQL so diffs are very easy to read.
+This plugin uses [schemadiff](https://github.com/planetscale/schemadiff) to generate schema diffs in SQL, as an alternative to the [CakePHP Migrations plugin](https://book.cakephp.org/migrations/3/en/index.html) as this workflow seems more intuitive for source control.  Plus, the file format used is plain SQL so diffs are very easy to read.  Note that `schemadiff` does not always recognize column order changes [per this thread](https://github.com/planetscale/schemadiff/issues/29).
 
-The usage mimics the format of [DBDiff](https://github.com/rkaiser0324/DBDiff) which was used previously.
+For historical reasons, the usage mimics the format of [DBDiff](https://github.com/rkaiser0324/DBDiff) which was used previously.
 
-Note that `schemadiff` does not recognize column order changes after a table has been created, [by design](https://github.com/planetscale/schemadiff/issues/29).
 
 ## Installation
 
-You can install this plugin into your CakePHP application using [composer](https://getcomposer.org).
-
-The recommended way to install composer packages is:
-
-```
-composer require rkaiser0324/schema-manage
-```
+1. Download the `schemadiff` binary at put it in your path, e.g., 
+    ```bash
+    wget https://github.com/planetscale/schemadiff/releases/download/v1.4/schemadiff-linux.tar.gz \
+            && tar -xvzf schemadiff-linux.tar.gz \
+            && mv schemadiff /usr/local/bin/ \
+    ```
+1. Install this plugin into your CakePHP application using [composer](https://getcomposer.org):
+    ```bash
+    composer require rkaiser0324/schema-manage
+    ```
 
 ## Usage
 
