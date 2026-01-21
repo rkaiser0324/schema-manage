@@ -52,9 +52,9 @@ class DiffLatestCommand extends DiffCommand
             ]);
         $this->_connection_no_db = ConnectionManager::get('no_db');
 
-        $this->_tempdb_name = 'aaa_tempdb_' . strftime('%Y%m%d%H%M%S');
+        $this->_tempdb_name = 'aaa_tempdb_' . date('YmdHis');
         $io->out("Creating temporary database " .$this->_tempdb_name);
-        $this->_connection_no_db->query("CREATE DATABASE IF NOT EXISTS " . $this->_tempdb_name);
+        $this->_connection_no_db->execute("CREATE DATABASE IF NOT EXISTS " . $this->_tempdb_name);
 
         ConnectionManager::setConfig('tempdb', [
             'url' => sprintf('mysql://%s:%s@%s/%s', $config['username'], $config['password'], $config['host'], $this->_tempdb_name)

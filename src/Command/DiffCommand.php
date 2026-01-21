@@ -79,7 +79,7 @@ class DiffCommand extends \Cake\Command\Command
     {
         if (!empty($this->_tempdb_name)) {
             $io->out("Dropping temporary database " .$this->_tempdb_name);
-            $this->_connection_no_db->query("DROP DATABASE " . $this->_tempdb_name);
+            $this->_connection_no_db->execute("DROP DATABASE " . $this->_tempdb_name);
         }
 
         $io->success('Done.');
@@ -91,7 +91,7 @@ class DiffCommand extends \Cake\Command\Command
             throw new \exception("No configuration for 'before' connection; snapshot not implemented yet");
         }
 
-        $output_path = sprintf(ROOT . '/config/SchemaDiffs/%s/%s_%s.sql', $config_after['name'], strftime('%Y%m%d%H%M%S'), $diff_name);
+        $output_path = sprintf(ROOT . '/config/SchemaDiffs/%s/%s_%s.sql', $config_after['name'], date('YmdHis'), $diff_name);
         if (!is_dir(dirname($output_path))) {
             if (!mkdir(dirname($output_path), 0600, true)) {
                 throw new \exception(sprintf("Cannot create directory %s", dirname($output_path)));
