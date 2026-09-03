@@ -77,7 +77,7 @@ class DiffLatestCommand extends DiffCommand
 
                 // Execute each statement individually for better error handling
                 foreach (preg_split('@;[\r\n]@', $up_sql, -1, PREG_SPLIT_NO_EMPTY) as $s) {
-                    $buffer = $connection_tempdb->prepare($s);
+                    $buffer = $connection_tempdb->getDriver()->prepare($s);
                     try {
                         $statement = $buffer->execute();
                     } catch (\exception $ex) {

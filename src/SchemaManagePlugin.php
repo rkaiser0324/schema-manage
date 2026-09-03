@@ -12,7 +12,7 @@ use Cake\Console\CommandCollection;
 /**
  * Plugin for SchemaManage
  */
-class Plugin extends BasePlugin
+class SchemaManagePlugin extends BasePlugin
 {
     public function console(\Cake\Console\CommandCollection $commands): \Cake\Console\CommandCollection
     {
